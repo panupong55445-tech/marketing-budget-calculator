@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>เครื่องคำนวณงบการตลาดออนไลน์รายเดือน | ONE SOCIAL</title>
+  <meta name="description" content="รวมค่าบริการเอเจนซี่ งบโฆษณา และค่าใช้จ่ายอื่น เพื่อเทียบงบการตลาดรายเดือนและงบต่อคำขอตามเป้าหมาย">
+  <style>
+    body { margin: 0; background: #fff; color: #182133; font: 1rem/1.75 system-ui, sans-serif; }
+    main, footer { max-width: 46rem; margin: auto; padding: 1rem clamp(1rem, 5vw, 2.5rem); }
+    header { padding: 1.5rem 0 0.25rem; }
+    header p { margin: 0; color: #8b2635; font-weight: 700; letter-spacing: 0.08em; }
+    h1 { font-size: clamp(1.6rem, 4vw, 2.5rem); line-height: 1.35; margin: 0.45rem 0 0.8rem; }
+    h2 { font-size: 1.25rem; margin: 0 0 0.6rem; }
+    li { margin: 0.4rem 0; }
+    a { color: #932436; text-underline-offset: 0.2em; }
+    input:focus-visible, a:focus-visible { outline: 3px solid #2956ad; outline-offset: 2px; }
+    footer { border-top: 1px solid #d8dce4; color: #4a5260; }
+  </style>
+</head>
+<body>
+<main>
+<header><p>ONE SOCIAL</p><h1>คำนวณงบการตลาดออนไลน์รายเดือนก่อนขอใบเสนอราคา</h1></header>
+<p>เวลาเทียบใบเสนอราคาการตลาดรายเดือน ให้เอาค่าทีมมารวมกับงบโฆษณาและค่าใช้จ่ายที่ต้องจ่ายเพิ่มก่อน ตัวอย่างเช่น ค่าทีม 25,000 บาท งบโฆษณา 12,000 บาท และค่าเดินทางหรืออุปกรณ์ 3,000 บาท รวมเป็น 40,000 บาทต่อเดือน ลองเปลี่ยนตัวเลขด้านล่างให้ตรงกับใบเสนอราคาของคุณได้เลย</p>
+<style>
+#os-budget-calculator { margin: 1.5rem 0; padding: 1.25rem; border: 1px solid #d8dce4; border-radius: 12px; background: #f6f8fc; color: #182133; }
+#os-budget-calculator .budget-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); gap: 0.9rem; }
+#os-budget-calculator label { display: block; font-weight: 600; }
+#os-budget-calculator input { box-sizing: border-box; display: block; width: 100%; padding: 0.55rem; margin-top: 0.3rem; background: #fff; color: #182133; border: 1px solid #8792a5; border-radius: 6px; font: inherit; }
+#os-budget-calculator .budget-results { margin-top: 1rem; padding-top: 0.65rem; border-top: 1px solid #c3cbda; }
+#os-budget-calculator .budget-results p { margin: 0.4rem 0; }
+#os-budget-calculator output { font-weight: 700; }
+</style>
+<section id="os-budget-calculator" aria-labelledby="os-budget-heading">
+  <h2 id="os-budget-heading">เครื่องคำนวณงบรายเดือน</h2>
+  <div class="budget-inputs">
+    <label for="os-fee">ค่าบริการทีม (บาท)<input id="os-fee" type="number" min="0" step="0.01" inputmode="decimal" value="25000" /></label>
+    <label for="os-ads">งบโฆษณา (บาท)<input id="os-ads" type="number" min="0" step="0.01" inputmode="decimal" value="12000" /></label>
+    <label for="os-extras">ค่าใช้จ่ายอื่น (บาท)<input id="os-extras" type="number" min="0" step="0.01" inputmode="decimal" value="3000" /></label>
+    <label for="os-leads">เป้าคำขอที่ตรงโจทย์ (ราย)<input id="os-leads" type="number" min="1" step="1" inputmode="numeric" value="20" /></label>
+  </div>
+  <div class="budget-results" aria-live="polite">
+    <p>งบรวมต่อเดือน <output id="os-total">40,000 บาท</output></p>
+    <p>งบรวมต่อคำขอตามเป้า <output id="os-per-lead">2,000 บาท</output></p>
+    <p id="os-budget-error" hidden></p>
+  </div>
+</section>
+<script>
+(function () {
+  const calculator = document.getElementById('os-budget-calculator');
+  if (!calculator) return;
+  const costs = ['os-fee', 'os-ads', 'os-extras'].map(id => calculator.querySelector('#' + id));
+  const leads = calculator.querySelector('#os-leads');
+  const totalOutput = calculator.querySelector('#os-total');
+  const leadOutput = calculator.querySelector('#os-per-lead');
+  const error = calculator.querySelector('#os-budget-error');
+  const formatter = new Intl.NumberFormat('th-TH', { maximumFractionDigits: 2 });
+  const baht = amount => formatter.format(amount) + ' บาท';
+
+  function updateBudget() {
+    const validCosts = costs.every(input => input.value === '' ? !input.validity.badInput : input.validity.valid);
+    const total = costs.reduce((sum, input) => sum + (input.value === '' ? 0 : input.valueAsNumber), 0);
+    const validTotal = validCosts && Number.isFinite(total);
+    const validLeads = leads.validity.valid && Number.isInteger(leads.valueAsNumber) && leads.valueAsNumber > 0;
+    totalOutput.textContent = validTotal ? baht(total) : '—';
+    leadOutput.textContent = validTotal && validLeads ? baht(total / leads.valueAsNumber) : '—';
+    const message = !validTotal ? 'กรอกค่าใช้จ่ายเป็นตัวเลขตั้งแต่ 0 บาท' : !validLeads && leads.value !== '' ? 'กรอกเป้าคำขอเป็นจำนวนเต็มตั้งแต่ 1 ราย' : '';
+    error.textContent = message;
+    error.hidden = message === '';
+  }
+
+  calculator.addEventListener('input', updateBudget);
+  updateBudget();
+}());
+</script>
+<h2>ก่อนเอาตัวเลขไปเทียบใบเสนอราคา</h2>
+<ul><li>ใส่เฉพาะค่าใช้จ่ายของเดือนเดียวกัน ถ้าค่าถ่ายเพิ่มหรือค่าอุปกรณ์จ่ายเฉพาะเดือนแรก ให้คำนวณเดือนแรกแยกจากเดือนถัดไป</li><li>ใช้เกณฑ์เดียวกันทั้งสองเจ้า เช่น รวมภาษีทั้งคู่ และนับเฉพาะคนที่ทักมาถามบริการที่ขายจริง พร้อมให้ข้อมูลพอที่ทีมจะเสนอราคาได้</li><li>ตัวเลขต่อคำขอคำนวณจากงบรวมหารด้วยเป้าที่คุณกรอก หลังจบเดือนให้ใช้จำนวนคำขอจริงแทนเป้าเพื่อเทียบผล</li></ul>
+<p>ถ้าอยากได้รายการงานตั้งต้นสำหรับเทียบกับงบ ลองดู <a href="https://one-social.media/?utm_source=blogger&amp;utm_medium=referral&amp;utm_campaign=marketing_budget&amp;utm_content=budget_calculator#packages">ขอบเขตแพ็กเกจการตลาดออนไลน์ของ ONE SOCIAL</a> แล้วจดว่ารายการไหนรวมในค่าทีม และรายการไหนต้องเผื่องบเพิ่ม</p>
+</main>
+<footer>เครื่องมือฟรีจาก ONE SOCIAL · ตัวอย่างงบสำหรับใช้เปรียบเทียบ</footer>
+</body>
+</html>
